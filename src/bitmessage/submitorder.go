@@ -6,7 +6,7 @@ package bitmessage
 
 //TODO: do
 //https://en.bitcoin.it/wiki/Protocol_specification#submitorder
-type SubmitOrder struct{
+type SubmitOrder struct {
 	hash [32]byte
 	//wallet_entry CWalletTx
 }

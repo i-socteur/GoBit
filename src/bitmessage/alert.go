@@ -4,9 +4,7 @@
 
 package bitmessage
 
-
 //TODO: do
 //https://en.bitcoin.it/wiki/Protocol_specification#alert
-type Alert struct{
-
+type Alert struct {
 }

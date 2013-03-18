@@ -49,7 +49,7 @@ func (vm *VersionMessage) SetTimestamp(setTime uint64) {
 }
 
 func (vm *VersionMessage) SetTimestampNow() {
-	answer := mymath.Uint642HexRev(uint64(time.Now().UnixNano()))
+	answer := mymath.Uint642HexRev(uint64(time.Now().Unix()))
 	for i := 0; i < 8; i++ {
 		vm.Timestamp[i] = answer[i]
 	}

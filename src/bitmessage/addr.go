@@ -4,14 +4,11 @@
 
 package bitmessage
 
-
-import (
-
-)
+import ()
 
 //checked, works as expected
-type AddressList struct{
-	Count uint8
+type AddressList struct {
+	Count    uint8
 	AddrList []*NetworkAddress
 }
 
@@ -20,31 +17,32 @@ type AddressList struct{
 	address NetworkAddress
 }*/
 
-func (al *AddressList)AddAddress(na *NetworkAddress){
-	if al.Count<29{ //so payload length would be less than 1000 bytes
+func (al *AddressList) AddAddress(na *NetworkAddress) {
+	if al.Count < 29 { //so payload length would be less than 1000 bytes
 		al.Count++
-		al.AddrList=append(al.AddrList, na)
+		al.AddrList = append(al.AddrList, na)
 	}
 }
 
-func (al *AddressList)Clear(){
-	al.Count=0
-	al.AddrList=nil
+func (al *AddressList) Clear() {
+	al.Count = 0
+	al.AddrList = nil
 }
 
 //TODO: double check if 30 is really the answer
-func (al *AddressList)Compile()[]byte{
-	answer:=make([]byte, 1+30*len(al.AddrList))
+func (al *AddressList) Compile() []byte {
+	answer := make([]byte, 1+30*len(al.AddrList))
 
-	answer[0]=al.Count
-	iterator:=1
-	for i:=0;i<len(al.AddrList);i++{
-		copy(answer[iterator:], al.AddrList[i].Compile())	
-		iterator+=34
+	answer[0] = al.Count
+	iterator := 1
+	for i := 0; i < len(al.AddrList); i++ {
+		copy(answer[iterator:], al.AddrList[i].Compile())
+		iterator += 34
 	}
 
 	return answer
 }
+
 /*
 func (a *Address)SetLastSeen(seen uint32){
 	a.lastseen=seen

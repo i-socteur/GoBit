@@ -4,30 +4,30 @@
 
 package bitmessage
 
-import(
+import (
 	"mymath"
 )
 
 const (
-	SUCCESS uint32 = iota //==0 //The IP Transaction can proceed (checkorder), or has been accepted (submitorder)
+	SUCCESS      uint32 = iota //==0 //The IP Transaction can proceed (checkorder), or has been accepted (submitorder)
 	WALLET_ERROR uint32 = iota //==1 //AcceptWalletTransaction() failed
-	DENIED uint32 = iota //==2 //IP Transactions are not accepted by this node
-	)
+	DENIED       uint32 = iota //==2 //IP Transactions are not accepted by this node
+)
 
 //TODO: test
-type Reply struct{
+type Reply struct {
 	Reply [4]byte
 }
 
-func (r *Reply)SetReply(rep uint32){
-	answer:=mymath.Uint322HexRev(rep)//TODO: check if it is rev or not
+func (r *Reply) SetReply(rep uint32) {
+	answer := mymath.Uint322HexRev(rep) //TODO: check if it is rev or not
 	copy(r.Reply[:], answer[:])
 }
 
-func (r *Reply)Compile()[]byte{
+func (r *Reply) Compile() []byte {
 	return r.Reply[:]
 }
 
-func (r *Reply)Len() int{
+func (r *Reply) Len() int {
 	return len(r.Reply)
 }
