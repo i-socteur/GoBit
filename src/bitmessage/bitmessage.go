@@ -1,3 +1,4 @@
+// Copyright 2013 msm595. All rights reserved.
 // Copyright 2011 ThePiachu. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -7,6 +8,7 @@ package bitmessage
 //Package for handling low-level Bitcoin messages
 
 import (
+	"io"
 	"mymath"
 )
 
@@ -155,6 +157,23 @@ func (bm *BitMessage) GiveMessageType() int {
 	return MessageType(bm.Command[:])
 }
 
+func (bm *BitMessage) String() string {
+	s := ""
+
+	magic := mymath.Hex2Uint32(bm.Magic[:])
+	if magic == TestNetMagic {
+		s += "TestNet\n"
+	} else if magic == MainNetMagic {
+		s += "MainNet\n"
+	} else {
+		s += "UnknownNet\n"
+	}
+
+	
+
+	return s
+}
+
 func MessageType(Command []byte) int {
 
 	msglen := 0
@@ -239,43 +258,63 @@ func DeserializeMessages(msgs []byte) []*BitMessage {
 func DecodeMessage(msg []byte) *BitMessage {
 	bm := new(BitMessage)
 
-	if len(msg) < 20 {
+	if len(msg) < 24 {
 		return nil
 	}
 	for i := 0; i < 4; i++ {
 		bm.Magic[i] = msg[0+i]
 		bm.Length[i] = msg[16+i]
+		bm.Checksum[i] = msg[20+i]
 	}
 	for i := 0; i < 12; i++ {
 		bm.Command[i] = msg[4+i]
 	}
 
-	msgtype := MessageType(msg[4:16])
+//	msgtype := MessageType(msg[4:16])
 
 	Payloadbyte := msg[16:20]
 	Payload := int(mymath.HexRev2Big(Payloadbyte).Int64())
 
-	if msgtype == VERSION || msgtype == VERACK {
-		bm.Payload = nil
-		if len(msg) < 20+Payload {
-			return nil
-		} else {
-			if msgtype == VERSION {
-				bm.SetPayloadByte(msg[20 : 20+Payload])
-			} else if msgtype == VERACK {
-			}
-		}
-
+	if len(msg) < 24+Payload {
+		return nil
 	} else {
-		if len(msg) < 24+Payload {
-			return nil
-		} else {
-			for i := 0; i < 4; i++ {
-				bm.Checksum[i] = msg[20+i]
-			}
-			bm.SetPayloadByte(msg[24 : 24+Payload])
-		}
+		bm.SetPayloadByte(msg[24 : 24+Payload])
 	}
 
 	return bm
+}
+
+//TODO: seek magic nums, deal with faulty data, check checksum
+func DecodeMessages(data io.Reader, msgChan chan<- *BitMessage) {
+	for {
+		buf := make([]byte, 24)
+		n, err := io.ReadFull(data, buf)
+		if err != nil || n < 24 {
+			close(msgChan)
+			return
+		}
+
+		bm := new(BitMessage)
+
+		for i := 0; i < 4; i++ {
+			bm.Magic[i] = buf[0+i]
+			bm.Length[i] = buf[16+i]
+			bm.Checksum[i] = buf[20+i]
+		}
+		for i := 0; i < 12; i++ {
+			bm.Command[i] = buf[4+i]
+		}
+
+		payload := int(mymath.HexRev2Big(bm.Length[:]).Int64())
+
+		buf = make([]byte, payload)
+		n, err = io.ReadFull(data, buf)
+		if err != nil || n < payload {
+			close(msgChan)
+			return
+		}
+
+		bm.SetPayloadByte(buf)
+		msgChan <- bm
+	}
 }

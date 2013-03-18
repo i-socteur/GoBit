@@ -41,7 +41,7 @@ func main() {
 	fmt.Println(peer.IP)
 
 	//connect to peer
-	bm := new(bitmessage.BitMessage)//todo: make more idiomatic (golang)
+	bm := new(bitmessage.BitMessage) //todo: make more idiomatic (golang)
 	bm.SetMagic(bitmessage.MainNetMagic)
 	bm.SetCommand("version")
 
@@ -67,6 +67,11 @@ func main() {
 	fmt.Println(compiled)
 	conn.Write(compiled)
 	fmt.Println("Reading")
+	msgChan := make(chan *bitmessage.BitMessage)
+	go bitmessage.DecodeMessages(conn, msgChan)
+	for bm := range msgChan {
+		fmt.Println(bm.GiveMessageType())
+	}
 	reader = bufio.NewReader(conn)
 	s, err = reader.ReadString('k')
 	if err != nil {
