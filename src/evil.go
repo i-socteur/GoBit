@@ -66,16 +66,15 @@ func main() {
 	}
 	fmt.Println(compiled)
 	conn.Write(compiled)
-	fmt.Println("Reading")
+	fmt.Println("Reading:\n")
 	msgChan := make(chan *bitmessage.BitMessage)
 	go bitmessage.DecodeMessages(conn, msgChan)
+	i := 0
 	for bm := range msgChan {
-		fmt.Println(bm.GiveMessageType())
+		fmt.Println("###############\n" + bm.String() + "\n\n")
+		i++
+		if i == 2 {
+			break
+		}
 	}
-	reader = bufio.NewReader(conn)
-	s, err = reader.ReadString('k')
-	if err != nil {
-		fmt.Println("Error reading response:", err)
-	}
-	fmt.Println(s)
 }

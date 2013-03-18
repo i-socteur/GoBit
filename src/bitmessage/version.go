@@ -1,3 +1,4 @@
+// Copyright 2013 msm595. All rights reserved.
 // Copyright 2011 ThePiachu. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -26,6 +27,22 @@ type VersionMessage struct {
 	SubVersionNum []byte
 	StartHeight   [4]byte
 }
+
+/*func VersionMessageFromBytes(data []byte) *VersionMessage {
+	if len(data) < 84 {
+		return nil
+	}
+
+	return &VersionMessage{
+		[4]byte(data[0:4]),
+		[8]byte(data[4:12]),
+		[8]byte(data[12:20]),
+		[26]byte(data[20:46]),
+		[26]byte(data[46:72]),
+		data[72 : len(data)-4],
+		[4]byte(data[len(data)-4:]),
+	}
+}*/
 
 func (vm *VersionMessage) SetVersion(ver uint32) {
 	answer := mymath.Uint322HexRev(ver)

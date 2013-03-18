@@ -8,6 +8,7 @@ package bitmessage
 //Package for handling low-level Bitcoin messages
 
 import (
+	"fmt"
 	"io"
 	"mymath"
 )
@@ -160,16 +161,31 @@ func (bm *BitMessage) GiveMessageType() int {
 func (bm *BitMessage) String() string {
 	s := ""
 
-	magic := mymath.Hex2Uint32(bm.Magic[:])
+	magic := mymath.HexRev2Uint32(bm.Magic[:])
+	magicS := "Unknown"
 	if magic == TestNetMagic {
-		s += "TestNet\n"
+		magicS = "Test"
 	} else if magic == MainNetMagic {
-		s += "MainNet\n"
-	} else {
-		s += "UnknownNet\n"
+		magicS = "Main"
 	}
 
-	
+	msglen := 0
+	for i := 0; i < len(bm.Command); i++ {
+		if bm.Command[i] == 0 {
+			msglen = i
+			break
+		}
+	}
+
+	cmd := mymath.Byte2String(bm.Command[0:msglen])
+
+	s += fmt.Sprintf(
+		"Message Header:\n  %X\t\t\t- %s network magic bytes"+
+			"\n  %X\t- \"%s\" command"+
+			"\n  %X\t\t\t- Payload is %d bytes long"+
+			"\n  %X\t\t\t- Payload checksum"+
+			"\n\nPayload:\n  %X",
+		bm.Magic, magicS, bm.Command, cmd, bm.Length, mymath.HexRev2Uint32(bm.Length[:]), bm.Checksum, bm.Payload)
 
 	return s
 }
@@ -270,7 +286,7 @@ func DecodeMessage(msg []byte) *BitMessage {
 		bm.Command[i] = msg[4+i]
 	}
 
-//	msgtype := MessageType(msg[4:16])
+	//	msgtype := MessageType(msg[4:16])
 
 	Payloadbyte := msg[16:20]
 	Payload := int(mymath.HexRev2Big(Payloadbyte).Int64())
@@ -284,7 +300,7 @@ func DecodeMessage(msg []byte) *BitMessage {
 	return bm
 }
 
-//TODO: seek magic nums, deal with faulty data, check checksum
+//TODO: seek magic nums, deal with faulty data, check checksum, etc
 func DecodeMessages(data io.Reader, msgChan chan<- *BitMessage) {
 	for {
 		buf := make([]byte, 24)
