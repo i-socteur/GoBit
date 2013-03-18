@@ -68,6 +68,10 @@ type BitMessage struct {
 	Payload  []byte   //the actual data
 }
 
+type Compiler interface {
+	Compile() []byte
+}
+
 func (bm *BitMessage) SetMagic(newMagic uint32) {
 	magchars := mymath.Uint322Hex(newMagic)
 
@@ -96,8 +100,8 @@ func (bm *BitMessage) GetMagic() []byte {
 	return bm.Magic[:]
 }
 
-func (bm *BitMessage) SetPayloadVersion(vm *VersionMessage) {
-	tmp := vm.Compile()
+func (bm *BitMessage) SetPayload(c Compiler) {
+	tmp := c.Compile()
 	bm.Payload = make([]byte, len(tmp))
 	for i := 0; i < len(tmp); i++ {
 		bm.Payload[i] = tmp[i]
@@ -109,15 +113,6 @@ func (bm *BitMessage) SetPayloadByte(pld []byte) {
 	bm.Payload = make([]byte, len(pld))
 	for i := 0; i < len(pld); i++ {
 		bm.Payload[i] = pld[i]
-	}
-	bm.calculateChecksumAndLength()
-}
-
-func (bm *BitMessage) SetPayloadAddr(al *AddressList) {
-	tmp := al.Compile()
-	bm.Payload = make([]byte, len(tmp))
-	for i := 0; i < len(tmp); i++ {
-		bm.Payload[i] = tmp[i]
 	}
 	bm.calculateChecksumAndLength()
 }
@@ -179,13 +174,19 @@ func (bm *BitMessage) String() string {
 
 	cmd := mymath.Byte2String(bm.Command[0:msglen])
 
+	var payload interface{} = bm.Payload
+
+	if cmd == "version" {
+		payload = VersionMessageFromBytes(bm.Payload)
+	}
+
 	s += fmt.Sprintf(
-		"Message Header:\n  %X\t\t\t- %s network magic bytes"+
-			"\n  %X\t- \"%s\" command"+
-			"\n  %X\t\t\t- Payload is %d bytes long"+
-			"\n  %X\t\t\t- Payload checksum"+
-			"\n\nPayload:\n  %X",
-		bm.Magic, magicS, bm.Command, cmd, bm.Length, mymath.HexRev2Uint32(bm.Length[:]), bm.Checksum, bm.Payload)
+		"Message Header:\n  %X\t\t\t- %s network magic bytes\n"+
+			"  %X\t- \"%s\" command\n"+
+			"  %X\t\t\t- Payload is %d bytes long\n"+
+			"  %X\t\t\t- Payload checksum\n\n"+
+			"Payload:\n  %s",
+		bm.Magic, magicS, bm.Command, cmd, bm.Length, mymath.HexRev2Uint32(bm.Length[:]), bm.Checksum, payload)
 
 	return s
 }

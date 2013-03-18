@@ -8,6 +8,11 @@ import (
 )
 
 //https://en.bitcoin.it/wiki/Satoshi_Client_Node_Discovery
+func dealMsg(msgChan chan *bitmessage.BitMessage) {
+	for bm := range msgChan {
+		fmt.Println("###############\n" + bm.String() + "\n\n")
+	}
+}
 
 func main() {
 	//get external address	
@@ -55,7 +60,7 @@ func main() {
 	vm.SetSubVersionNull()
 	vm.SetStartHeight(uint32(1))
 
-	bm.SetPayloadVersion(vm)
+	bm.SetPayload(vm)
 
 	compiled := bm.Compile()
 
@@ -69,12 +74,5 @@ func main() {
 	fmt.Println("Reading:\n")
 	msgChan := make(chan *bitmessage.BitMessage)
 	go bitmessage.DecodeMessages(conn, msgChan)
-	i := 0
-	for bm := range msgChan {
-		fmt.Println("###############\n" + bm.String() + "\n\n")
-		i++
-		if i == 2 {
-			break
-		}
-	}
+	dealMsg(msgChan)
 }

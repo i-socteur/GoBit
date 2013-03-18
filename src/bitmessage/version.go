@@ -6,6 +6,7 @@
 package bitmessage
 
 import (
+	"fmt"
 	"mymath"
 	"net"
 	"time"
@@ -28,27 +29,45 @@ type VersionMessage struct {
 	StartHeight   [4]byte
 }
 
-/*func VersionMessageFromBytes(data []byte) *VersionMessage {
+func VersionMessageFromBytes(data []byte) *VersionMessage {
 	if len(data) < 84 {
 		return nil
 	}
 
-	return &VersionMessage{
-		[4]byte(data[0:4]),
-		[8]byte(data[4:12]),
-		[8]byte(data[12:20]),
-		[26]byte(data[20:46]),
-		[26]byte(data[46:72]),
-		data[72 : len(data)-4],
-		[4]byte(data[len(data)-4:]),
-	}
-}*/
+	vm := &VersionMessage{}
+
+	copy(vm.Version[:], data[0:4])
+	copy(vm.Services[:], data[4:12])
+	copy(vm.Timestamp[:], data[12:20])
+	copy(vm.AddrYou[:], data[20:46])
+	copy(vm.AddrMe[:], data[46:72])
+	copy(vm.Nonce[:], data[72:80])
+	copy(vm.SubVersionNum, data[80:len(data)-4])
+	copy(vm.StartHeight[:], data[len(data)-4:])
+
+	return vm
+}
+
+func (vm *VersionMessage) String() string {
+	s := ""
+
+	s += fmt.Sprintf(
+		"Version message:\n"+
+			"  %X\t\t\t- %d (version)",
+		vm.Version, vm.GetVersion())
+
+	return s
+}
 
 func (vm *VersionMessage) SetVersion(ver uint32) {
 	answer := mymath.Uint322HexRev(ver)
 	for i := 0; i < 4; i++ {
 		vm.Version[i] = answer[i]
 	}
+}
+
+func (vm *VersionMessage) GetVersion() uint32 {
+	return mymath.HexRev2Uint32(vm.Version[:])
 }
 
 func (vm *VersionMessage) SetServices(ser uint64) {
