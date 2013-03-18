@@ -6,11 +6,11 @@
 package bitecdsa
 
 import (
-	"big"
 	"bitelliptic"
-	"crypto/sha1"
 	"crypto/rand"
+	"crypto/sha1"
 	"encoding/hex"
+	"math/big"
 	"testing"
 )
 
@@ -209,13 +209,13 @@ func TestVectors(t *testing.T) {
 	for i, test := range testVectors {
 		pub := PublicKey{
 			BitCurve: bitelliptic.S256(),
-			X:     fromHex(test.Qx),
-			Y:     fromHex(test.Qy),
+			X:        fromHex(test.Qx),
+			Y:        fromHex(test.Qy),
 		}
 		msg, _ := hex.DecodeString(test.msg)
 		sha.Reset()
 		sha.Write(msg)
-		hashed := sha.Sum()
+		hashed := sha.Sum(nil)
 		r := fromHex(test.r)
 		s := fromHex(test.s)
 		if Verify(&pub, hashed, r, s) != test.ok {

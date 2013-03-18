@@ -4,32 +4,32 @@
 
 package bitmessage
 
-import(
+import (
+	"math/big"
 	"mymath"
-	"big"
 )
 
 type Hash [32]byte
 
-func (h Hash)Len()int{
+func (h Hash) Len() int {
 	return 32
 }
 
-func NewHashFromBig(hash *big.Int) Hash{
+func NewHashFromBig(hash *big.Int) Hash {
 	var h Hash
-	h=mymath.Big2Hex32(hash)
+	h = mymath.Big2Hex32(hash)
 	return h
 }
 
-func NewHashFromString(hash string) Hash{
+func NewHashFromString(hash string) Hash {
 	var h Hash
-	h=mymath.String2Hex32(hash)
+	h = mymath.String2Hex32(hash)
 	return h
 }
 
-func NewHash(b []byte) Hash{
+func NewHash(b []byte) Hash {
 	var h Hash
-	if len(b)==32{
+	if len(b) == 32 {
 		copy(h[:], b)
 	}
 	return h
