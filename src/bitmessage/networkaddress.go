@@ -30,8 +30,8 @@ func (na *NetworkAddress) SetTimestamp(setTime uint32) {
 	}
 }
 
-func (na *NetworkAddress) SetTimestampNow(setTime uint32) {
-	answer := mymath.Uint322HexRev(uint32(time.Now().UnixNano()))
+func (na *NetworkAddress) SetTimestampNow() {
+	answer := mymath.Uint322HexRev(uint32(time.Now().Unix()))
 	for i := 0; i < 4; i++ {
 		na.Time[i] = answer[i]
 	}

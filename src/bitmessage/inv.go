@@ -1,3 +1,4 @@
+// Copyright 2013 msm595. All rights reserved.
 // Copyright 2011 ThePiachu. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -5,6 +6,7 @@
 package bitmessage
 
 import (
+	"fmt"
 	"mymath"
 )
 
@@ -35,6 +37,30 @@ type GetData Inv
 
 //TODO: support adding blocks and transactions
 
+func InvMessageFromBytes(b []byte) *Inv {
+	im := new(Inv)
+	im.Count, b = mymath.DecodeVarIntGiveRest(b)
+
+	im.Inventory = make([]*InventoryVector, len(b)/36)
+	for i := 0; i < int(im.Count); i++ {
+		im.Inventory[i] = InventoryVectorFromBytes(b[i*36:])
+	}
+	return im
+}
+
+func (im *Inv) String() string {
+	s := ""
+
+	s += fmt.Sprintf(
+		"Inv message:\n"+
+			"  %X\t\t\t\t- %d entries\n"+
+			"  %s",
+		mymath.VarInt2HexRev(im.Count), im.Count,
+		im.Inventory)
+
+	return s
+}
+
 func (i *Inv) Clear() {
 	i.Count = 0
 	i.Inventory = nil
@@ -61,6 +87,13 @@ func (i *Inv) Compile() []byte {
 type InventoryVector struct {
 	Vectortype uint32
 	Hash       [32]byte
+}
+
+func InventoryVectorFromBytes(b []byte) *InventoryVector {
+	iv := new(InventoryVector)
+	iv.Vectortype = mymath.HexRev2Uint32(b[0:4])
+	copy(iv.Hash[:], b[4:])
+	return iv
 }
 
 //TODO: support adding blocks and transactions

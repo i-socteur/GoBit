@@ -1,3 +1,4 @@
+// Copyright 2013 msm595. All rights reserved.
 // Copyright 2011 ThePiachu. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -132,6 +133,13 @@ func VarInt2HexRev(vi VarInt) []byte {
 type VarStr struct {
 	length VarInt
 	str    []byte
+}
+
+func DecodeVarStr(b []byte) *VarStr {
+	vs := new(VarStr)
+	vs.length, b = DecodeVarIntGiveRest(b)
+	vs.str = b[:vs.length]
+	return vs
 }
 
 func (vs *VarStr) Len() int {

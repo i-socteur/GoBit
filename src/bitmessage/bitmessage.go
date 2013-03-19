@@ -174,10 +174,15 @@ func (bm *BitMessage) String() string {
 
 	cmd := mymath.Byte2String(bm.Command[0:msglen])
 
-	var payload interface{} = bm.Payload
+	var payload interface{}
 
-	if cmd == "version" {
+	switch cmd {
+	default:
+		payload = fmt.Sprintf("%X", bm.Payload)
+	case "version":
 		payload = VersionMessageFromBytes(bm.Payload)
+	case "inv":
+		payload = InvMessageFromBytes(bm.Payload)
 	}
 
 	s += fmt.Sprintf(
@@ -185,7 +190,7 @@ func (bm *BitMessage) String() string {
 			"  %X\t- \"%s\" command\n"+
 			"  %X\t\t\t- Payload is %d bytes long\n"+
 			"  %X\t\t\t- Payload checksum\n\n"+
-			"Payload:\n  %s",
+			"%s",
 		bm.Magic, magicS, bm.Command, cmd, bm.Length, mymath.HexRev2Uint32(bm.Length[:]), bm.Checksum, payload)
 
 	return s
@@ -246,7 +251,7 @@ func MessageType(Command []byte) int {
 	return WRONGMESSAGE
 }
 
-func DeserializeMessages(msgs []byte) []*BitMessage {
+/*func DeserializeMessages(msgs []byte) []*BitMessage {
 	iterator := 0
 	var vec []*BitMessage
 	for len(msgs[iterator:]) >= 20 {
@@ -267,10 +272,10 @@ func DeserializeMessages(msgs []byte) []*BitMessage {
 
 	for i:=0;i<vec.Len();i++{
 		answer[i]=vec.At(i).(BitMessage)
-	}*/
+	}/
 
 	return vec
-}
+}*/
 
 func DecodeMessage(msg []byte) *BitMessage {
 	bm := new(BitMessage)
